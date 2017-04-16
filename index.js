@@ -85,8 +85,10 @@ class ServerlessDynalite {
         await this.startHandler();
 
         this.watcher = chokidar.watch('./serverless.yml', { persistent: true, interval: 1000 })
-            .on('change', () => {
+            .on('change', async () => {
                 this.log('serverless.yml changed, updating...');
+
+                await this.service.load({});
                 this.updateTables();
             });
 
