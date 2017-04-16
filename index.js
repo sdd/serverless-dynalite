@@ -10,14 +10,15 @@ const DEFAULT_REGION = 'localhost';
 
 const PORT_OPTIONS = {
     shortcut: 'p',
-    usage: `the port number that dynalite will listen on (default ${ DEFAULT_PORT })`
+    usage: `the port number that dynalite will listen on (default ${ DEFAULT_PORT })`,
+    required: false
 };
 
-class ServerlessPluginDynalite {
+class ServerlessDynalite {
 
     constructor(serverless, options) {
 
-        console.log(Object.keys(serverless));
+        console.log(serverless);
 
         this.serverless = serverless;
         this.service = serverless.service;
@@ -28,18 +29,20 @@ class ServerlessPluginDynalite {
 
         this.commands = {
             dynalite: {
-                start: {
-                    usage: 'start a persistent dynalite server',
-                    lifecycleEvents: [ 'startHandler' ],
-                    options: {
-                        port: PORT_OPTIONS
-                    }
-                },
-                watch: {
-                    usage: 'start dynalite and watch for table definition changes',
-                    lifecycleEvents: [ 'watchHandler' ],
-                    options: {
-                        port: PORT_OPTIONS
+                commands: {
+                    start: {
+                        usage: 'start a persistent dynalite server',
+                        lifecycleEvents: [ 'startHandler' ],
+                        options: {
+                            port: PORT_OPTIONS
+                        }
+                    },
+                    watch: {
+                        usage: 'start persistent dynalite server and watch for table definition changes',
+                        lifecycleEvents: [ 'watchHandler' ],
+                        options: {
+                            port: PORT_OPTIONS
+                        }
                     }
                 }
             }
@@ -88,14 +91,17 @@ class ServerlessPluginDynalite {
                 this.log('serverless.yml changed, updating...');
                 this.updateTables();
             });
+
+        this.log('Listening for table additions / deletions.');
     }
 
     async startHandler() {
         this.dynalite = Dynalite({ createTableMs: 0 });
         await new Promise(
-            (res, rej) => this.dynalite.listen(port, err => err ? rej(err) : res())
+            (res, rej) => this.dynalite.listen(this.port, err => err ? rej(err) : res())
         );
 
+        this.log(`Dynalite listening on http://localhost:${ this.port }`);
         return this.updateTables();
     }
 
@@ -119,24 +125,26 @@ class ServerlessPluginDynalite {
             ),
             'Properties'
         );
-        this.log('Tables in config: ', requiredTables);
+        this.log(`Tables in config: ${ JSON.stringify(_.map(requiredTables, 'TableName')) }`);
 
-        const currentTables = await this.dynamodb.listTables({}).promise();
-        this.log('Current Tables: ', currentTables.TableNames);
+        const currentTables = await this.dynamodb.raw.listTables({}).promise();
+        this.log(`Current Tables: ${ JSON.stringify(currentTables.TableNames) }`);
 
         const missingTables = _.reject(requiredTables,
             ({ TableName }) => _.includes(currentTables.TableNames, TableName)
         );
-        this.log('Missing Tables: ', _.map(missingTables, 'TableName'));
+        this.log(`Missing Tables: ${ JSON.stringify(_.map(missingTables, 'TableName')) }`);
 
         _.forEach(missingTables, async table => {
             this.log(`Creating table ${ table.TableName }...`);
-            await this.dynamodb.createTable(table).promise();
+            await this.dynamodb.raw.createTable(table).promise();
         });
 
-        const finalTables = await this.dynamodb.listTables({}).promise();
-        this.log('Current Tables: ', finalTables.TableNames);
+        setTimeout(async () => {
+            const finalTables = await this.dynamodb.raw.listTables({}).promise();
+            this.log(`Current Tables: ${ JSON.stringify(finalTables.TableNames) }`);
+        }, 1000);
     }
 }
 
-module.exports = ServerlessPluginDynalite;
+module.exports = ServerlessDynalite;
