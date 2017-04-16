@@ -18,8 +18,6 @@ class ServerlessDynalite {
 
     constructor(serverless, options) {
 
-        console.log(serverless);
-
         this.serverless = serverless;
         this.service = serverless.service;
 
