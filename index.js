@@ -87,8 +87,7 @@ class ServerlessDynalite {
         this.watcher = chokidar.watch('./serverless.yml', { persistent: true, interval: 1000 })
             .on('change', async () => {
                 this.log('serverless.yml changed, updating...');
-
-                await this.service.load({});
+                await this.reloadService();
                 this.updateTables();
             });
 
@@ -113,6 +112,15 @@ class ServerlessDynalite {
         if (this.dynalite) {
             this.dynalite.close();
         }
+    }
+
+    async reloadService() {
+      const options = this.serverless.processedInput.options;
+      await this.service.load(options);
+      await this.serverless.variables.populateService(options);
+      await this.service.setFunctionNames(options);
+      await this.service.mergeResourceArrays();
+      await this.service.validate();
     }
 
     async updateTables() {
