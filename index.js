@@ -1,5 +1,7 @@
 'use strict';
 
+require("babel-polyfill");
+
 const _ = require('lodash');
 const Dynalite = require('dynalite');
 const chokidar = require('graceful-chokidar');
