@@ -7,10 +7,17 @@ const AWS = require('aws-sdk');
 
 const DEFAULT_PORT = 4567;
 const DEFAULT_REGION = 'localhost';
+const DEFAULT_DIR = undefined;
 
 const PORT_OPTIONS = {
     shortcut: 'p',
     usage: `the port number that dynalite will listen on (default ${ DEFAULT_PORT })`,
+    required: false
+};
+
+const DIR_OPTIONS = {
+    shortcut: 'd',
+    usage: `the directory dynalite will store its db file (default In-Memory)`,
     required: false
 };
 
@@ -32,14 +39,16 @@ class ServerlessDynalite {
                         usage: 'start a persistent dynalite server',
                         lifecycleEvents: [ 'startHandler' ],
                         options: {
-                            port: PORT_OPTIONS
+                            port: PORT_OPTIONS,
+                            dir: DIR_OPTIONS
                         }
                     },
                     watch: {
                         usage: 'start persistent dynalite server and watch for table definition changes',
                         lifecycleEvents: [ 'watchHandler' ],
                         options: {
-                            port: PORT_OPTIONS
+                            port: PORT_OPTIONS,
+                            dir: DIR_OPTIONS
                         }
                     }
                 }
@@ -56,6 +65,10 @@ class ServerlessDynalite {
 
     get port() {
         return _.get(this, ['config', 'start', 'port'], DEFAULT_PORT);
+    }
+
+    get dir() {
+        return _.get(this, ['config', 'start', 'dir'], DEFAULT_DIR);
     }
 
     get region() {
@@ -96,7 +109,7 @@ class ServerlessDynalite {
     }
 
     async startHandler() {
-        this.dynalite = Dynalite({ createTableMs: 0 });
+        this.dynalite = Dynalite({ createTableMs: 0, path: this.dir });
         await new Promise(
             (res, rej) => this.dynalite.listen(this.port, err => err ? rej(err) : res())
         );
