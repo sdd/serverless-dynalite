@@ -60,7 +60,7 @@ class ServerlessDynalite {
         this.hooks = {
             "dynalite:start:startHandler": this.startHandler.bind(this),
             "dynalite:watch:watchHandler": this.watchHandler.bind(this),
-            "before:offline:start": this.watchHandler.bind(this),
+            "before:offline:start:init": this.watchHandler.bind(this),
             "before:offline:start:end": this.endHandler.bind(this)
         };
     }
