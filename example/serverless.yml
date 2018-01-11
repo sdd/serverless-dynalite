@@ -1,0 +1,56 @@
+service: serverless-dynalite-example
+
+plugins:
+  - serverless-offline
+  - serverless-dynalite
+
+custom:
+  dynalite:
+    start:
+      port: 4567
+      region: us-east-1
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  
+# functions:
+#   rulesApi:
+#     handler: sample.handler
+#     events:
+#       - http:
+#           method: GET
+#           path: /
+#           cors: true
+
+resources:  
+  Resources:
+    ResultsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: SampleTable
+        AttributeDefinitions:
+          - AttributeName: unique_key
+            AttributeType: S
+        KeySchema:
+          - AttributeName: unique_key
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    DynamoDBIamPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn: DynamoDbTable
+      Properties:
+        PolicyName: lambda-dynamodb
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: arn:aws:dynamodb:*:*:table/SampleTable
+        Roles:
+          - Ref: IamRoleLambdaExecution
