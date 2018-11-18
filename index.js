@@ -160,6 +160,28 @@ class ServerlessDynalite {
 
         _.forEach(missingTables, async table => {
             this.log(`Creating table ${ table.TableName }...`);
+
+            if (migration.StreamSpecification && migration.StreamSpecification.StreamViewType) {
+                migration.StreamSpecification.StreamEnabled = true;
+            }
+
+            if (migration.TimeToLiveSpecification) {
+                delete migration.TimeToLiveSpecification;
+            }
+
+            if (migration.SSESpecification) {
+                migration.SSESpecification.Enabled = migration.SSESpecification.SSEEnabled;
+                delete migration.SSESpecification.SSEEnabled;
+            }
+
+            if (migration.PointInTimeRecoverySpecification) {
+                delete migration.PointInTimeRecoverySpecification;
+            }
+
+            if (migration.Tags) {
+                delete migration.Tags;
+            }
+
             await this.dynamodb.raw.createTable(table).promise();
         });
 
