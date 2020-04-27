@@ -1,10 +1,6 @@
-'use strict';
-
-require("babel-polyfill");
-
 const _ = require('lodash');
 const Dynalite = require('dynalite');
-const chokidar = require('graceful-chokidar');
+const chokidar = require('chokidar');
 const AWS = require('aws-sdk');
 
 const DEFAULT_PORT = 4567;

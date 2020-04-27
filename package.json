@@ -9,8 +9,14 @@
   },
   "babel": {
     "presets": [
-      "es2015",
-      "stage-2"
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "12"
+          }
+        }
+      ]
     ]
   },
   "prepublishOnly": "npm run build",
@@ -31,15 +37,14 @@
   },
   "homepage": "https://github.com/sdd/serverless-dynalite#readme",
   "dependencies": {
-    "aws-sdk": "^2.41.0",
-    "babel-polyfill": "^6.26.0",
-    "dynalite": "^1.2.0",
-    "graceful-chokidar": "^0.1.0",
-    "lodash": "^4.17.4"
+    "aws-sdk": "^2.648.0",
+    "chokidar": "^3.3.1",
+    "dynalite": "^3.1.5",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1"
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0"
   }
 }
